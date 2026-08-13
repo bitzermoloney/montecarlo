@@ -270,6 +270,12 @@
         }
       });
 
+      function getApiUrl() {
+        const baseUrl = new URL(window.location.href);
+        const pathname = baseUrl.pathname.endsWith('/') ? baseUrl.pathname : `${baseUrl.pathname}/`;
+        return new URL('api/upload', `${baseUrl.origin}${pathname}`).toString();
+      }
+
       uploadButton.addEventListener('click', async () => {
         if (!currentFile) {
           setStatus('Please choose a CSV or Excel file first.', 'error');
@@ -284,7 +290,7 @@
         setStatus('Running simulation...', '');
 
         try {
-          const response = await fetch('/api/upload', {
+          const response = await fetch(getApiUrl(), {
             method: 'POST',
             body: formData
           });
