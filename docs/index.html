@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monte Carlo Spreadsheet Tool</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --panel: #ffffff;
+        --card: #ebf3ff;
+        --primary: #2a5bd7;
+        --primary-dark: #173f99;
+        --text: #1b2433;
+        --muted: #5f6f86;
+        --border: #dfe8f5;
+        --success: #1d9a67;
+        --warning: #c9801f;
+        --danger: #d94a4a;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #eef3ff 0%, #f5f8fc 45%, #eefaf5 100%);
+        color: var(--text);
+      }
+
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 48px 24px 80px;
+      }
+
+      .hero {
+        text-align: center;
+        margin-bottom: 26px;
+      }
+
+      .hero h1 {
+        margin: 0 0 10px;
+        font-size: clamp(2.2rem, 4vw, 3.6rem);
+        color: var(--primary-dark);
+      }
+
+      .hero p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.02rem;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 16px 35px rgba(12, 31, 61, 0.08);
+        padding: 28px;
+      }
+
+      .dropzone {
+        border: 2px dashed var(--primary);
+        border-radius: 18px;
+        background: #edf5ff;
+        padding: 40px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .dropzone.dragover {
+        background: #dfeeff;
+        transform: translateY(-1px);
+      }
+
+      .dropzone strong {
+        display: block;
+        font-size: 1.25rem;
+        margin-bottom: 6px;
+      }
+
+      .dropzone small {
+        color: var(--muted);
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .field {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      input[type="number"] {
+        width: 130px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: white;
+        color: var(--text);
+      }
+
+      button {
+        border: none;
+        border-radius: 10px;
+        background: var(--primary);
+        color: white;
+        font-weight: 700;
+        padding: 12px 20px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: var(--primary-dark);
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .status {
+        min-height: 24px;
+        margin-top: 18px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+
+      .status.success { color: var(--success); }
+      .status.error { color: var(--danger); }
+      .status.warning { color: var(--warning); }
+
+      .hidden { display: none; }
+
+      .results {
+        margin-top: 34px;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .metric {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px;
+      }
+
+      .metric .label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      .metric .value {
+        margin-top: 6px;
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--primary-dark);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 18px;
+        background: white;
+        border: 1px solid var(--border);
+      }
+
+      th, td {
+        border-bottom: 1px solid var(--border);
+        padding: 12px 14px;
+        text-align: left;
+      }
+
+      th {
+        background: #f4f7ff;
+        color: var(--primary-dark);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <h1>Monte Carlo Spreadsheet Tool</h1>
+        <p>Upload a spreadsheet or CSV file to calculate simulation values and percentiles.</p>
+      </header>
+
+      <main class="panel">
+        <div id="dropzone" class="dropzone" tabindex="0" aria-label="Upload spreadsheet">
+          <strong>Drag &amp; drop your Excel or CSV file here</strong>
+          <small>or click to browse</small>
+        </div>
+
+        <div class="controls">
+          <label class="field">
+            <span>Iterations</span>
+            <input id="iterations" type="number" min="1" value="1000" />
+          </label>
+          <button id="runButton" type="button">Run simulation</button>
+        </div>
+
+        <input id="fileInput" type="file" accept=".csv,.xlsx,.xls,.xlsm" />
+        <div id="status" class="status"></div>
+      </main>
+
+      <section id="results" class="results panel hidden">
+        <h2>Simulation Summary</h2>
+        <div id="summaryGrid" class="summary-grid"></div>
+
+        <h2 style="margin-top: 24px;">All generated values</h2>
+        <div style="overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Row</th>
+                <th>Iteration</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const dropzone = document.getElementById('dropzone');
+      const fileInput = document.getElementById('fileInput');
+      const statusEl = document.getElementById('status');
+      const runButton = document.getElementById('runButton');
+      const resultsSection = document.getElementById('results');
+      const summaryGrid = document.getElementById('summaryGrid');
+      const resultsBody = document.getElementById('resultsBody');
+
+      let selectedFile = null;
+
+      function setStatus(message, kind = '') {
+        statusEl.textContent = message;
+        statusEl.className = 'status';
+        if (kind) {
+          statusEl.classList.add(kind);
+        }
+      }
+
+      function getApiUrl() {
+        const configured = window.MC_API_URL || window.API_URL || '/api/upload';
+        return configured;
+      }
+
+      function bindFile(file) {
+        selectedFile = file;
+        setStatus(`Selected: ${file.name}`, 'success');
+      }
+
+      dropzone.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (event) => bindFile(event.target.files[0]));
+
+      ['dragenter', 'dragover'].forEach((eventName) => {
+        dropzone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          dropzone.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach((eventName) => {
+        dropzone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          dropzone.classList.remove('dragover');
+        });
+      });
+
+      dropzone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const file = event.dataTransfer.files[0];
+        if (file) bindFile(file);
+      });
+
+      runButton.addEventListener('click', async () => {
+        if (!selectedFile) {
+          setStatus('Please choose a file first.', 'error');
+          return;
+        }
+
+        const iterations = document.getElementById('iterations').value;
+        const apiUrl = getApiUrl();
+
+        if (!apiUrl || apiUrl === '/api/upload') {
+          setStatus('This GitHub Pages page is being shown. Set window.MC_API_URL to your backend API endpoint to run the upload.', 'warning');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('iterations', iterations);
+
+        setStatus('Running simulation...', '');
+
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || 'Upload failed.');
+          }
+
+          summaryGrid.innerHTML = '';
+          for (const summary of data.summary || []) {
+            const card = document.createElement('div');
+            card.className = 'metric';
+            card.innerHTML = `
+              <div class="label">${summary.name}</div>
+              <div class="value">P50 ${Number(summary.p50).toFixed(2)}</div>
+              <div style="margin-top: 8px; color: var(--muted);">P20: ${Number(summary.p20).toFixed(2)} &nbsp; P80: ${Number(summary.p80).toFixed(2)}</div>
+            `;
+            summaryGrid.appendChild(card);
+          }
+
+          resultsBody.innerHTML = '';
+          for (const item of (data.values || []).slice(0, 1000)) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${item.row}</td>
+              <td>${item.iteration}</td>
+              <td>${Number(item.value).toFixed(2)}</td>
+            `;
+            resultsBody.appendChild(row);
+          }
+
+          resultsSection.classList.remove('hidden');
+          setStatus('Simulation complete.', 'success');
+        } catch (error) {
+          setStatus(error.message, 'error');
+        }
+      });
+    </script>
+  </body>
+</html>
