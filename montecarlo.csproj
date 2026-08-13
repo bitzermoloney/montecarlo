@@ -12,7 +12,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="main.cs" />
     <Compile Remove="MonteCarlo.Tests/**/*.cs" />
+    <Compile Remove="MonteCarlo.Web/**/*.cs" />
+    <Compile Remove="MonteCarlo.Core/**/*.cs" />
     <None Remove="MonteCarlo.Tests/**/*.cs" />
+    <None Remove="MonteCarlo.Web/**/*.cs" />
+    <None Remove="MonteCarlo.Core/**/*.cs" />
   </ItemGroup>
 </Project>

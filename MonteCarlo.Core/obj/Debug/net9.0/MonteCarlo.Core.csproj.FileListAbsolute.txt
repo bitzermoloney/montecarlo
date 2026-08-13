@@ -1,0 +1,13 @@
+/workspaces/montecarlo/MonteCarlo.Core/obj/Debug/net9.0/MonteCarlo.Core.csproj.AssemblyReference.cache
+/workspaces/montecarlo/MonteCarlo.Core/obj/Debug/net9.0/MonteCarlo.Core.GeneratedMSBuildEditorConfig.editorconfig
+/workspaces/montecarlo/MonteCarlo.Core/obj/Debug/net9.0/MonteCarlo.Core.AssemblyInfoInputs.cache
+/workspaces/montecarlo/MonteCarlo.Core/obj/Debug/net9.0/MonteCarlo.Core.AssemblyInfo.cs
+/workspaces/montecarlo/MonteCarlo.Core/obj/Debug/net9.0/MonteCarlo.Core.csproj.CoreCompileInputs.cache
+/workspaces/montecarlo/MonteCarlo.Core/obj/Debug/net9.0/MonteCarlo.Core.sourcelink.json
+/workspaces/montecarlo/MonteCarlo.Core/bin/Debug/net9.0/MonteCarlo.Core.deps.json
+/workspaces/montecarlo/MonteCarlo.Core/bin/Debug/net9.0/MonteCarlo.Core.dll
+/workspaces/montecarlo/MonteCarlo.Core/bin/Debug/net9.0/MonteCarlo.Core.pdb
+/workspaces/montecarlo/MonteCarlo.Core/obj/Debug/net9.0/MonteCarlo.Core.dll
+/workspaces/montecarlo/MonteCarlo.Core/obj/Debug/net9.0/refint/MonteCarlo.Core.dll
+/workspaces/montecarlo/MonteCarlo.Core/obj/Debug/net9.0/MonteCarlo.Core.pdb
+/workspaces/montecarlo/MonteCarlo.Core/obj/Debug/net9.0/ref/MonteCarlo.Core.dll

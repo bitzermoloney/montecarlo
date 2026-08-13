@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monte Carlo Spreadsheet Results</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --panel: #ffffff;
+        --card: #eef4ff;
+        --primary: #1f5fd9;
+        --primary-dark: #163d8b;
+        --text: #132238;
+        --muted: #60708a;
+        --success: #1f9d68;
+        --border: #dfe7f5;
+        --danger: #d9534f;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #eef4ff, #f7f9fc 40%, #edf6f5);
+        color: var(--text);
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 48px 24px 80px;
+      }
+
+      .hero {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      .hero h1 {
+        margin: 0 0 8px;
+        font-size: clamp(2.2rem, 4vw, 3.3rem);
+        color: var(--primary-dark);
+      }
+
+      .hero p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 12px 30px rgba(20, 41, 82, 0.08);
+        padding: 28px;
+      }
+
+      .dropzone {
+        border: 2px dashed var(--primary);
+        border-radius: 16px;
+        background: #eef5ff;
+        padding: 42px 16px;
+        text-align: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+
+      .dropzone.dragover {
+        background: #dfeeff;
+        transform: translateY(-1px);
+      }
+
+      .dropzone strong {
+        display::block;
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+      }
+
+      .dropzone small {
+        color: var(--muted);
+      }
+
+      .controls {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      input[type="number"] {
+        width: 140px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: white;
+        font-size: 1rem;
+      }
+
+      button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        background: var(--primary);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      button:hover { background: var(--primary-dark); }
+
+      .status {
+        margin-top: 20px;
+        min-height: 28px;
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .status.error { color: var(--danger); }
+      .status.success { color: var(--success); }
+
+      .results {
+        margin-top: 40px;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+      }
+
+      .metric {
+        background: var(--card);
+        border-radius: 14px;
+        padding: 18px 20px;
+        border: 1px solid var(--border);
+      }
+
+      .metric .label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      .metric .value {
+        margin-top: 8px;
+        font-size: 1.9rem;
+        font-weight: 700;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 18px;
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      th, td {
+        border-bottom: 1px solid var(--border);
+        padding: 12px 14px;
+        text-align: left;
+      }
+
+      th {
+        background: #f4f8ff;
+        color: var(--primary-dark);
+      }
+
+      .hidden { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <h1>Monte Carlo Workbook</h1>
+        <p>Upload an Excel or CSV file and review the simulation output instantly.</p>
+      </header>
+
+      <main class="panel">
+        <div id="dropzone" class="dropzone" tabindex="0" aria-label="Upload file">
+          <strong>Drag & drop your Excel or CSV file here</strong>
+          <small>or click to browse</small>
+        </div>
+
+        <div class="controls">
+          <label>
+            <span>Iterations</span>
+            <input id="iterations" type="number" min="1" value="1000" />
+          </label>
+          <button id="uploadButton" type="button">Run simulation</button>
+        </div>
+
+        <input id="fileInput" type="file" accept=".csv,.xlsx,.xls,.xlsm" class="hidden" />
+        <div id="status" class="status"></div>
+      </main>
+
+      <section id="results" class="results hidden panel">
+        <h2>Simulation Summary</h2>
+        <div id="summaryGrid" class="summary-grid"></div>
+
+        <h2 style="margin-top: 28px;">All generated values</h2>
+        <div style="overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Row</th>
+                <th>Iteration</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const dropzone = document.getElementById('dropzone');
+      const fileInput = document.getElementById('fileInput');
+      const status = document.getElementById('status');
+      const uploadButton = document.getElementById('uploadButton');
+      const resultsPanel = document.getElementById('results');
+      const summaryGrid = document.getElementById('summaryGrid');
+      const resultsTableBody = document.getElementById('resultsTableBody');
+      let currentFile = null;
+
+      function setStatus(message, kind = '') {
+        status.textContent = message;
+        status.className = 'status';
+        if (kind) {
+          status.classList.add(kind);
+        }
+      }
+
+      function bindFile(file) {
+        currentFile = file;
+        setStatus(`Selected: ${file.name}`, 'success');
+      }
+
+      dropzone.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (event) => bindFile(event.target.files[0]));
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          dropzone.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          dropzone.classList.remove('dragover');
+        });
+      });
+
+      dropzone.addEventListener('drop', (event) => {
+        const file = event.dataTransfer.files[0];
+        if (file) {
+          bindFile(file);
+        }
+      });
+
+      uploadButton.addEventListener('click', async () => {
+        if (!currentFile) {
+          setStatus('Please choose a CSV or Excel file first.', 'error');
+          return;
+        }
+
+        const iterations = document.getElementById('iterations').value;
+        const formData = new FormData();
+        formData.append('file', currentFile);
+        formData.append('iterations', iterations);
+
+        setStatus('Running simulation...', '');
+
+        try {
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || 'Upload failed.');
+          }
+
+          renderResults(data);
+          setStatus('Simulation complete.', 'success');
+        } catch (error) {
+          setStatus(error.message, 'error');
+        }
+      });
+
+      function renderResults(data) {
+        summaryGrid.innerHTML = '';
+        const summaryRows = data.summary || [];
+
+        for (const row of summaryRows) {
+          const card = document.createElement('div');
+          card.className = 'metric';
+          card.innerHTML = `
+            <div class="label">${row.name}</div>
+            <div class="value">P50 ${Number(row.p50).toFixed(2)}</div>
+            <div style="margin-top: 8px; color: var(--muted);">P20: ${Number(row.p20).toFixed(2)} &nbsp; P80: ${Number(row.p80).toFixed(2)}</div>
+          `;
+          summaryGrid.appendChild(card);
+        }
+
+        resultsTableBody.innerHTML = '';
+        const values = data.values || [];
+        for (const row of values.slice(0, 1000)) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${row.row}</td>
+            <td>${row.iteration}</td>
+            <td>${Number(row.value).toFixed(2)}</td>
+          `;
+          resultsTableBody.appendChild(tr);
+        }
+
+        resultsPanel.classList.remove('hidden');
+      }
+    </script>
+  </body>
+</html>
