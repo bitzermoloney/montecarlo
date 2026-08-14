@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MonteCarlo.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+06a6a32f0970f36d2f537c87968ad965a0a7590b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+319269ed06834c948e564e56c434958d61d0f623")]
 [assembly: System.Reflection.AssemblyProductAttribute("MonteCarlo.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MonteCarlo.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

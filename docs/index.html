@@ -258,8 +258,17 @@
       }
 
       function getApiUrl() {
-        const configured = window.MC_API_URL || window.API_URL || '/api/upload';
-        return configured;
+        const configured = window.MC_API_URL || window.API_URL;
+        if (configured) {
+          return configured;
+        }
+
+        const host = window.location.hostname;
+        if (host === 'localhost' || host === '127.0.0.1') {
+          return new URL('/api/upload', window.location.origin).toString();
+        }
+
+        return '';
       }
 
       function bindFile(file) {
@@ -299,8 +308,8 @@
         const iterations = document.getElementById('iterations').value;
         const apiUrl = getApiUrl();
 
-        if (!apiUrl || apiUrl === '/api/upload') {
-          setStatus('This GitHub Pages page is being shown. Set window.MC_API_URL to your backend API endpoint to run the upload.', 'warning');
+        if (!apiUrl) {
+          setStatus('This page is being served from a static host such as GitHub Pages. Set window.MC_API_URL to your backend API endpoint, for example https://your-backend.example.com/api/upload, before uploading.', 'warning');
           return;
         }
 
