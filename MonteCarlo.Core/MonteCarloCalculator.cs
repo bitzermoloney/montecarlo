@@ -10,7 +10,7 @@ public sealed record SummaryRow(string Name, double P20, double P50, double P80)
 
 public static class MonteCarloCalculator
 {
-    public static List<double> RunSimulation(InputRow row, int iterations, Random? random = null)
+    public static List<double> RunSimulation(InputRow row, int iterations, Random? random = null) // Creates a list of random samples generated
     {
         var generator = random ?? new Random();
         var results = new List<double>(iterations);
@@ -23,7 +23,7 @@ public static class MonteCarloCalculator
         return results;
     }
 
-    public static Summary GetSummary(IEnumerable<double> values)
+    public static Summary GetSummary(IEnumerable<double> values) // Returns the P20, P50 and P80 of each value in the list of random samples
     {
         var sorted = values.OrderBy(v => v).ToArray();
 
@@ -39,7 +39,7 @@ public static class MonteCarloCalculator
     }
 
     private static double GetPercentile(IReadOnlyList<double> sortedValues, double percentile)
-    {
+    { // Gets the percentile (para) of the sorted list of values (para), returns (function)
         if (sortedValues.Count == 1)
         {
             return sortedValues[0];
@@ -56,13 +56,16 @@ public static class MonteCarloCalculator
 
         var fraction = index - lowerIndex;
         return sortedValues[lowerIndex] + (sortedValues[upperIndex] - sortedValues[lowerIndex]) * fraction;
+
+        // returns the value at the calculated percentile index, interpolating between the two nearest values if necessary
     }
 }
 
 public static class DistributionSampler
 {
     public static double SampleTriangular(double min, double mode, double max, Random random)
-    {
+    { // Finds max and min values for triangular
+    // If min is greater than max, swap them
         if (min > max)
         {
             (min, max) = (max, min);
@@ -91,12 +94,12 @@ public static class DistributionSampler
     }
 
     public static double SampleUniform(double min, double max, Random random)
-    {
+    { //Uniform
         return min + (max - min) * random.NextDouble();
     }
 
     public static double SampleNormal(double min, double mode, double max, Random random)
-    {
+    { // Normal
         var sigma = (max - min) / 6.0;
         sigma = sigma <= 0 ? 1 : sigma;
 
@@ -123,7 +126,7 @@ public static class DistributionSampler
     }
 
     public static double Sample(InputRow row, Random random)
-    {
+    { // Samples a value based on the distribution type specified in the InputRow
         var distribution = (row.Distribution ?? string.Empty).Trim();
 
         return distribution.ToLowerInvariant() switch
@@ -136,7 +139,7 @@ public static class DistributionSampler
     }
 }
 
-public static class SpreadsheetParser
+public static class SpreadsheetParser // yawn
 {
     public static List<InputRow> ParseCsv(string content)
     {
