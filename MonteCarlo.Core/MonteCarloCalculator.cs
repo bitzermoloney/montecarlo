@@ -3,24 +3,32 @@ using System.Text;
 
 namespace MonteCarlo.Core;
 
-public sealed record InputRow(string Name, double Min, double MostLikely, double Max, string Distribution);
-public sealed record Summary(double P20, double P50, double P80);
-public sealed record SimulationResult(string Name, int Iteration, double Value);
-public sealed record SummaryRow(string Name, double P20, double P50, double P80);
+public sealed record InputRow(string Name, double Min, double MostLikely, double Max, string Distribution); // 2D record (basically a table of the spreadsheet of tasks)
+public sealed record Summary(double P20, double P50, double P80); // 2D recpord; 1D = Each task, 1D = P20, P50, P80
+// UNUSED IN WEB VERSION --
+public sealed record SimulationResult(string Name, int Iteration, double Value); // For local port use
+public sealed record SummaryRow(string Name, double P20, double P50, double P80); // For local port use
+// --
 
-public static class MonteCarloCalculator
+public static class MonteCarloCalculator // Main calculation class
 {
+    // Contains two modules:
+    // - RunSimulation
+    // - GetSummary
+
     public static List<double> RunSimulation(InputRow row, int iterations, Random? random = null) // Creates a list of random samples generated
     {
-        var generator = random ?? new Random();
+        var generator = random ?? new Random(); // Error throwable: No random import
         var results = new List<double>(iterations);
 
         for (var i = 0; i < iterations; i++)
         {
-            results.Add(DistributionSampler.Sample(row, generator));
+            results.Add(DistributionSampler.Sample(row, generator)); // THIS IS THE MONTE CARLO ALGO
+            // List of results
         }
 
         return results;
+        // Paras (row, 10,000) would return 10,000 iterations of that row's distribution, which is later used to calculate the P20, P50 and P80 of that row
     }
 
     public static Summary GetSummary(IEnumerable<double> values) // Returns the P20, P50 and P80 of each value in the list of random samples
@@ -61,8 +69,9 @@ public static class MonteCarloCalculator
     }
 }
 
-public static class DistributionSampler
+public static class DistributionSampler // UNKOWN RESDIRECTS TO TRIANGULAR
 {
+    // Algorithms must find modal values to calculate the distribution of the random samples
     public static double SampleTriangular(double min, double mode, double max, Random random)
     { // Finds max and min values for triangular
     // If min is greater than max, swap them
@@ -335,3 +344,7 @@ public static class SpreadsheetParser // yawn
         return cell.CellValue?.InnerText ?? string.Empty;
     }
 }
+
+/// This code reads uncertain input values from CSV/Excel, repeatedly samples possible outcomes using triangular/uniform/normal probability distributions, and then summarises those thousands of outcomes using P20, P50 and P80 percentiles.
+
+/// If you're learning C#, the key thing to understand is that the code is also demonstrating several useful concepts at once: records, static classes, methods, nullable parameters, collections, LINQ, switch expressions, tuples, dictionaries, exception handling, streams, and Open XML spreadsheet parsing.
